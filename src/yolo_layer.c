@@ -37,7 +37,7 @@ layer make_yolo_layer(int batch, int w, int h, int n, int total, int *mask, int 
     }
     l.bias_updates = calloc(n*2, sizeof(float));
     l.outputs = h*w*n*(classes + 4 + 1);
-    l.inputs = l.outputs;
+    l.inputs = l.outputs;  //input和output数目相等
     l.truths = 90*(4 + 1);  //每张图片最多保存90个标签
     l.delta = calloc(batch*l.outputs, sizeof(float));  //反向传播误差导数
     l.output = calloc(batch*l.outputs, sizeof(float));  //预测结果
@@ -125,7 +125,7 @@ void delta_yolo_class(float *output, float *delta, int index, int class, int cla
 static int entry_index(layer l, int batch, int location, int entry)  //得到指针偏移量，即入口需要的索引
 {
     int n =   location / (l.w*l.h);  //第几个框，每个 grid 有3个框
-    int loc = location % (l.w*l.h);  //第几个 grid，
+    int loc = location % (l.w*l.h);  //第几个 grid
     return batch*l.outputs + n*l.w*l.h*(4+l.classes+1) + entry*l.w*l.h + loc;  //返回第 loc 个 grid 的第 n 个框的 entry 的指针偏移位置
 }
 
@@ -135,12 +135,12 @@ void forward_yolo_layer(const layer l, network net)  //最重要的前向传播
     memcpy(l.output, net.input, l.outputs*l.batch*sizeof(float));  //将层输入直接拷贝到层输出
 
 #ifndef GPU  //在 cpu 里，把预测输出的 x,y,confident 和80种类别都 sigmoid 激活，确保值在0~1
-    for (b = 0; b < l.batch; ++b){
-        for(n = 0; n < l.n; ++n){
+    for (b = 0; b < l.batch; ++b){  //batch循环，确定当前是第几个batch
+        for(n = 0; n < l.n; ++n){  //anchor循环，确定当前是第几个anchor
             int index = entry_index(l, b, n*l.w*l.h, 0);
-            activate_array(l.output + index, 2*l.w*l.h, LOGISTIC);
-            index = entry_index(l, b, n*l.w*l.h, 4);
-            activate_array(l.output + index, (1+l.classes)*l.w*l.h, LOGISTIC);
+            activate_array(l.output + index, 2*l.w*l.h, LOGISTIC); //每个grid的x,y做sigmoid激活
+            index = entry_index(l, b, n*l.w*l.h, 4);  //跳过x,y,w,h
+            activate_array(l.output + index, (1+l.classes)*l.w*l.h, LOGISTIC);  //每个grid的confident和80种类别做激活
         }
     }
 #endif
