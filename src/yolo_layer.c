@@ -81,10 +81,10 @@ void resize_yolo_layer(layer *l, int w, int h)
 }
 
 box get_yolo_box(float *x, float *biases, int n, int index, int i, int j, int lw, int lh, int w, int h, int stride)  //获得预测的边界框
-{
-    box b;
-    b.x = (i + x[index + 0*stride]) / lw;  //预测中心 x 值在层里的相对位置
-    b.y = (j + x[index + 1*stride]) / lh;  //预测中心 y 值在层里的相对位置
+{  //x就是predictions/output，stride是l.w*l.h
+    box b; 
+    b.x = (i + x[index + 0*stride]) / lw;  //预测中心 x 值在当前层里的相对位置
+    b.y = (j + x[index + 1*stride]) / lh;  //预测中心 y 值在当前层里的相对位置
     b.w = exp(x[index + 2*stride]) * biases[2*n]   / w;  //exp(x)*anchor/w，相对于网络输入 net.w 的宽度
     b.h = exp(x[index + 3*stride]) * biases[2*n+1] / h;  //exp(x)*anchor/h，相对于网络输入 net.h 的高度
     return b;
