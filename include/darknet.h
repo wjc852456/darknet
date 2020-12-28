@@ -113,18 +113,18 @@ struct layer;
 typedef struct layer layer;
 
 struct layer{
-    LAYER_TYPE type;
+    LAYER_TYPE type;  //layer类型，从yolov3.cfg读取，包括convolutional、shortcut、yolo、route等类型，注：route层相当于concat层
     ACTIVATION activation;
     COST_TYPE cost_type;
-    void (*forward)   (struct layer, struct network);
+    void (*forward)   (struct layer, struct network);  //函数指针
     void (*backward)  (struct layer, struct network);
     void (*update)    (struct layer, update_args);
     void (*forward_gpu)   (struct layer, struct network);
     void (*backward_gpu)  (struct layer, struct network);
     void (*update_gpu)    (struct layer, update_args);
     int batch_normalize;
-    int shortcut;
-    int batch;
+    int shortcut;  //默认值为0，shortcut层也为0
+    int batch;  //和network匹配
     int forced;
     int flipped;
     int inputs;
@@ -132,11 +132,11 @@ struct layer{
     int nweights;
     int nbiases;
     int extra;
-    int truths;
-    int h,w,c;
-    int out_h, out_w, out_c;
+    int truths;  //yolo层专属，
+    int h,w,c;  //输入的h,w,c
+    int out_h, out_w, out_c;  //输出的h,w,c
     int n;
-    int max_boxes;
+    int max_boxes;  //yolo层专属，
     int groups;
     int size;
     int side;
@@ -156,7 +156,7 @@ struct layer{
     float smooth;
     float dot;
     float angle;
-    float jitter;
+    float jitter;  //yolo层专属，
     float saturation;
     float exposure;
     float shift;
@@ -165,7 +165,7 @@ struct layer{
     float clip;
     int noloss;
     int softmax;
-    int classes;
+    int classes;  //yolo层专属，
     int coords;
     int background;
     int rescore;
@@ -175,8 +175,8 @@ struct layer{
     int reorg;
     int log;
     int tanh;
-    int *mask;
-    int total;
+    int *mask;  //yolo层专属，
+    int total;  //yolo层专属，anchors数目
 
     float alpha;
     float beta;
@@ -188,9 +188,9 @@ struct layer{
     float mask_scale;
     float class_scale;
     int bias_match;
-    int random;
-    float ignore_thresh;
-    float truth_thresh;
+    int random;  //yolo层专属，
+    float ignore_thresh;  //yolo层专属，
+    float truth_thresh;  //yolo层专属，
     float thresh;
     float focus;
     int classfix;
@@ -428,15 +428,15 @@ typedef enum {
 } learning_rate_policy;
 
 typedef struct network{
-    int n;
-    int batch;
+    int n; //layer数目
+    int batch; //batch数目，yolo中一般设为1，batch > 1的情况很少
     size_t *seen;
     int *t;
     float epoch;
     int subdivisions;
     layer *layers;
     float *output;
-    learning_rate_policy policy;
+    learning_rate_policy policy; //是个enum变量，有CONSTANT, STEP, EXP, POLY, STEPS, SIG, RANDOM几种
 
     float learning_rate;
     float momentum;
@@ -457,8 +457,8 @@ typedef struct network{
     float B2;
     float eps;
 
-    int inputs;
-    int outputs;
+    int inputs;  //input的数目
+    int outputs;  //output的数目
     int truths;
     int notruth;
     int h, w, c;
@@ -477,12 +477,12 @@ typedef struct network{
     int gpu_index;
     tree *hierarchy;
 
-    float *input;
+    float *input;  //input拉成1维向量后的地址
     float *truth;
     float *delta;
     float *workspace;
     int train;
-    int index;
+    int index;  //与shortcut层做eltwise相加层的index，其他层例如convolutional默认值为0
     float *cost;
     float clip;
 

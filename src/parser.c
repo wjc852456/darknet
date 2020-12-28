@@ -744,7 +744,7 @@ network *parse_network_cfg(char *filename)
     list *sections = read_cfg(filename);
     node *n = sections->front;
     if(!n) error("Config file has no sections");
-    network *net = make_network(sections->size - 1);
+    network *net = make_network(sections->size - 1); //创建一个network
     net->gpu_index = gpu_index;
     size_params params;
 
@@ -766,7 +766,7 @@ network *parse_network_cfg(char *filename)
     int count = 0;
     free_section(s);
     fprintf(stderr, "layer     filters    size              input                output\n");
-    while(n){
+    while(n){  //解析各种层的参数
         params.index = count;
         fprintf(stderr, "%5d ", count);
         s = (section *)n->val;
