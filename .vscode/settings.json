@@ -1,0 +1,5 @@
+{
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "editor.codeActionsOnSave": null,
+    "cmake.cmakePath": "/home/jcwang/cmake-3.19.2-Linux-x86_64/bin/cmake"
+}
