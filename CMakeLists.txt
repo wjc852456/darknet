@@ -20,7 +20,6 @@ set(AR ar)
 set(ARFLAGS rcs)
 set(OPTS -Ofast)
 set(LDFLAGS "-lm -pthread")
-set(COMMON -Iinclude/ -Isrc/)
 set(CMAKE_C_FLAGS "-Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC")
 
 if(OPENMP) 
@@ -56,14 +55,33 @@ if(GPU)
  set(LDFLAGS "{LDFLAGS} -lstdc++")
 endif()
 
-include_directories("include")
-include_directories("src")
+include_directories("include" "src")
 
 aux_source_directory("src" SRC_FILES)
 
-add_library(ALIB STATIC ${SRC_FILES})
-add_library(SLIB SHARED ${SRC_FILES})
+set(OBJ gemm.c utils.c cuda.c deconvolutional_layer.c convolutional_layer.c list.c image.c activations.c im2col.c col2im.c blas.c crop_layer.c dropout_layer.c maxpool_layer.c softmax_layer.c data.c matrix.c network.c connected_layer.c cost_layer.c parser.c option_list.c detection_layer.c route_layer.c upsample_layer.c box.c normalization_layer.c avgpool_layer.c layer.c local_layer.c shortcut_layer.c logistic_layer.c activation_layer.c rnn_layer.c gru_layer.c crnn_layer.c demo.c batchnorm_layer.c region_layer.c reorg_layer.c tree.c  lstm_layer.c l2norm_layer.c yolo_layer.c iseg_layer.c image_opencv.cpp)
 
-file(GLOB TEST_SRCS examples/*.c)
-add_executable(darknet ${TEST_SRCS})
+set(EXECOBJA captcha.c lsd.c super.c art.c tag.c cifar.c go.c rnn.c segmenter.c regressor.c classifier.c coco.c yolo.c detector.c nightmare.c instance-segmenter.c darknet.c)
+
+file(GLOB EXAMPLE_SRCS examples/EXECOBJA)
+file(GLOB SRC_SRCS src/OBJ)
+
+foreach(f ${OBJ})
+ set(OBJ_SRCS ${OBJ_SRCS} src/${f})
+endforeach(f)
+
+foreach(f ${EXECOBJA})
+ set(EXECOBJA_SRCS ${EXECOBJA_SRCS} examples/${f})
+endforeach(f)
+
+add_library(ALIB STATIC ${OBJ_SRCS})
+#add_library(${SLIB} SHARED ${OBJ_SRCS})
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(ALIB PUBLIC Threads::Threads)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../)
+link_libraries(ALIB m)
+add_executable(cmake_darknet ${EXECOBJA_SRCS})
+
 
