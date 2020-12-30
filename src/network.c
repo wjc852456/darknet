@@ -513,8 +513,8 @@ int num_detections(network *net, float thresh)
     int s = 0;
     for(i = 0; i < net->n; ++i){
         layer l = net->layers[i];
-        if(l.type == YOLO){
-            s += yolo_num_detections(l, thresh);
+        if(l.type == YOLO){  //判断是否YOLO type
+            s += yolo_num_detections(l, thresh);  //输出检测到的bbox数目（置信度大于阈值认为检测到有物体，bbox++）
         }
         if(l.type == DETECTION || l.type == REGION){
             s += l.w*l.h*l.n;
@@ -523,7 +523,7 @@ int num_detections(network *net, float thresh)
     return s;
 }
 
-detection *make_network_boxes(network *net, float thresh, int *num)
+detection *make_network_boxes(network *net, float thresh, int *num) //生成并且为bboxes分配空间
 {
     layer l = net->layers[net->n - 1];
     int i;
@@ -542,10 +542,10 @@ detection *make_network_boxes(network *net, float thresh, int *num)
 void fill_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, detection *dets)
 {
     int j;
-    for(j = 0; j < net->n; ++j){
+    for(j = 0; j < net->n; ++j){  //遍历所有层
         layer l = net->layers[j];
         if(l.type == YOLO){
-            int count = get_yolo_detections(l, w, h, net->w, net->h, thresh, map, relative, dets);
+            int count = get_yolo_detections(l, w, h, net->w, net->h, thresh, map, relative, dets);  //把yolo层的预测结果放到dets里面
             dets += count;
         }
         if(l.type == REGION){
@@ -561,7 +561,7 @@ void fill_network_boxes(network *net, int w, int h, float thresh, float hier, in
 
 detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num)
 {
-    detection *dets = make_network_boxes(net, thresh, num);
+    detection *dets = make_network_boxes(net, thresh, num);  //生成并且为bboxes分配空间
     fill_network_boxes(net, w, h, thresh, hier, map, relative, dets);
     return dets;
 }

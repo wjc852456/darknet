@@ -27,7 +27,7 @@ layer make_yolo_layer(int batch, int w, int h, int n, int total, int *mask, int 
     l.out_c = l.c;
     l.classes = classes;
     l.cost = calloc(1, sizeof(float));  //误差代价分配空间
-    l.biases = calloc(total*2, sizeof(float));  //保存 anchor 的大小
+    l.biases = calloc(total*2, sizeof(float));  //保存 anchor 的大小，保存的是10,14,  23,27,  37,58这些
     if(mask) l.mask = mask;  //l.mask 里保存了 [yolo] 配置里 “mask = 0,1,2” 的数值
     else{
         l.mask = calloc(n, sizeof(int));
@@ -81,7 +81,7 @@ void resize_yolo_layer(layer *l, int w, int h)
 }
 
 box get_yolo_box(float *x, float *biases, int n, int index, int i, int j, int lw, int lh, int w, int h, int stride)  //获得预测的边界框
-{  //x就是predictions/output，stride是l.w*l.h
+{  //x就是predictions/output；biases就是anchors；n是anchor数量，这里是3；index是二维格点(batch,h,w)的位置；i,j是col,row；stride等于l.w*l.h
     box b; 
     b.x = (i + x[index + 0*stride]) / lw;  //预测中心 x 值在当前层里的相对位置
     b.y = (j + x[index + 1*stride]) / lh;  //预测中心 y 值在当前层里的相对位置
@@ -331,9 +331,9 @@ int get_yolo_detections(layer l, int w, int h, int netw, int neth, float thresh,
             dets[count].bbox = get_yolo_box(predictions, l.biases, l.mask[n], box_index, col, row, l.w, l.h, netw, neth, l.w*l.h);
             dets[count].objectness = objectness;
             dets[count].classes = l.classes;
-            for(j = 0; j < l.classes; ++j){
+            for(j = 0; j < l.classes; ++j){  //遍历所有的classes
                 int class_index = entry_index(l, 0, n*l.w*l.h + i, 4 + 1 + j);
-                float prob = objectness*predictions[class_index];  //置信度 x 类别概率
+                float prob = objectness*predictions[class_index];  //类别置信度（置信度*类别概率）
                 dets[count].prob[j] = (prob > thresh) ? prob : 0;  //小于阈值则概率置0
             }
             ++count;

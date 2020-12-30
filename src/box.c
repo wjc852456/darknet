@@ -72,11 +72,11 @@ void do_nms_sort(detection *dets, int total, int classes, float thresh)
 
     for(k = 0; k < classes; ++k){
         for(i = 0; i < total; ++i){
-            dets[i].sort_class = k;
+            dets[i].sort_class = k;  //所有bbox的sort_class设置相同类别
         }
-        qsort(dets, total, sizeof(detection), nms_comparator);
+        qsort(dets, total, sizeof(detection), nms_comparator); //当前类别置信度小的排在后面
         for(i = 0; i < total; ++i){
-            if(dets[i].prob[k] == 0) continue;
+            if(dets[i].prob[k] == 0) continue;  //当前类别置信度为0（小于某个阈值）就略过
             box a = dets[i].bbox;
             for(j = i+1; j < total; ++j){
                 box b = dets[j].bbox;
